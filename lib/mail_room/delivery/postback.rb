@@ -67,9 +67,9 @@ module MailRoom
       def deliver(message)
         connection = Faraday.new(base_url) do |conn|
           if @delivery_options.token_auth?
-            conn.request :token_auth, @delivery_options.token
+            conn.request :authorization, 'Bearer', @delivery_options.token
           elsif @delivery_options.basic_auth?
-            conn.request :basic_auth, @delivery_options.username, @delivery_options.password
+            conn.request :authorization, :basic, @delivery_options.username, @delivery_options.password
           end
         end
 
