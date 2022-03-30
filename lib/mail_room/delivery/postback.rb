@@ -74,7 +74,7 @@ module MailRoom
         end
 
         connection.post(base_path) do |request|
-          request.body = message
+          request.body = { RawEmail: message } # specific to action mailbox
           config_request_content_type(request)
           config_request_jwt_auth(request)
         end
