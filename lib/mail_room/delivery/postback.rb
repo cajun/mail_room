@@ -1,4 +1,5 @@
 require 'faraday'
+require 'uri'
 require "mail_room/jwt"
 
 module MailRoom
@@ -64,19 +65,15 @@ module MailRoom
       # deliver the message using Faraday to the configured delivery_options url
       # @param message [String] the email message as a string, RFC822 format
       def deliver(message)
-        connection = Faraday.new
-
-        if @delivery_options.token_auth?
-          connection.token_auth @delivery_options.token
-        elsif @delivery_options.basic_auth?
-          connection.basic_auth(
-            @delivery_options.username,
-            @delivery_options.password
-          )
+        connection = Faraday.new(base_url) do |conn|
+          if token_auth?
+            conn.request :token_auth, @delivery_options.token
+          elsif basic_auth?
+            conn.request :basic_auth, @delivery_options.username, @delivery_options.password
+          end
         end
 
-        connection.post do |request|
-          request.url @delivery_options.url
+        connection.post(base_path) do |request|
           request.body = message
           config_request_content_type(request)
           config_request_jwt_auth(request)
@@ -87,6 +84,20 @@ module MailRoom
       end
 
       private
+
+      def base_url
+        uri = URI(@delivery_options.url)
+        url = "#{uri.scheme}:#{uri.host}"
+        if uri.port
+          "#{url}:#{uri.port}"
+        else
+          url
+        end
+      end
+
+      def base_path
+        URI(@delivery_options.url).path
+      end
 
       def config_request_content_type(request)
         return if @delivery_options.content_type.nil?
