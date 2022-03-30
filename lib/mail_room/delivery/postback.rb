@@ -66,9 +66,9 @@ module MailRoom
       # @param message [String] the email message as a string, RFC822 format
       def deliver(message)
         connection = Faraday.new(base_url) do |conn|
-          if token_auth?
+          if @delivery_options.token_auth?
             conn.request :token_auth, @delivery_options.token
-          elsif basic_auth?
+          elsif @delivery_options.basic_auth?
             conn.request :basic_auth, @delivery_options.username, @delivery_options.password
           end
         end
