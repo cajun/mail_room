@@ -87,7 +87,7 @@ module MailRoom
 
       def base_url
         uri = URI(@delivery_options.url)
-        url = "#{uri.scheme}:#{uri.host}"
+        url = "#{uri.scheme}://#{uri.host}"
         if uri.port
           "#{url}:#{uri.port}"
         else
